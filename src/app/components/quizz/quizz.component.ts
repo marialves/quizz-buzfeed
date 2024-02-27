@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import quizz_questions from "../../../assets/data/quizz_questions.json"
+import { CommonModule } from '@angular/common'
 
 @Component({
   selector: 'app-quizz',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './quizz.component.html',
   styleUrl: './quizz.component.css'
 })
@@ -12,7 +13,7 @@ export class QuizzComponent {
   title: string = "";
   questions: any;
   questionSelected: any;
-  answer: string[] = [];
+  answers: string[] = [];
   answerSelected: string = "";
   questionIndex: number = 0;
   questionMaxIndex: number = 0;
@@ -30,7 +31,31 @@ export class QuizzComponent {
   }
   
   playerChoose(value: string){
-    console.log("aqui")
-    this.answer.push(value);
+    console.log("aqui");
+    this.answers.push(value);
+    this.nextStep()
+  }
+
+  async nextStep(){
+    this.questionIndex+=1;
+
+    if(this.questionMaxIndex > this.questionIndex){
+      this.questionSelected = this.questions[this.questionIndex];
+    } else{
+      const  finalAnswer: string = await this.checkResult(this.answers)
+      this.finished = true;
+      this.answerSelected = quizz_questions.results[finalAnswer as keyof typeof quizz_questions.results]
+    }
+  }
+
+  async checkResult(answers: string[]){
+    const result = answers.reduce((previous, current, i, arr) =>{
+      if(arr.filter(item => item === previous).length > arr.filter(item => item === current).length){
+        return previous;
+      } else{
+        return current;
+      }
+    })
+    return result;
   }
 }
